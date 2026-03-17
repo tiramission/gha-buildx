@@ -45,6 +45,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
     
   chart:
+    depends-on: build
     runs-on: ubuntu-latest
     permissions:
       packages: write # to push the built image to GitHub Container Registry
