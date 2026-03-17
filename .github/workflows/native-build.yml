@@ -36,6 +36,7 @@ jobs:
       sign: false
       meta-tags: |
         type=raw,value=sha-{{sha}}
+        type=raw,value=git.${{ github.sha }}
         type=raw,value=latest,enable={{is_default_branch}}
     secrets:
       registry-auths: |
@@ -49,18 +50,19 @@ jobs:
       packages: write # to push the built image to GitHub Container Registry
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Modify values.yaml
         run: |
-          yq -i '.image.tag="${{ github.sha }}"' charts/go-app/values.yaml
-
+          yq -i '.image.tag="git.${{ github.sha }}"' charts/go-app/values.yaml
+          yq -i '.image.registry="ghcr.io"' charts/go-app/values.yaml
+          yq -i '.image.repository="${{ github.repository }}/go-app"' charts/go-app/values.yaml
 
       - name: Chart | Push
         uses: appany/helm-oci-chart-releaser@v0.5.0
         with:
           name: go-app
-          repository: ${{ github.repository }}/charts
+          repository: ${{ github.repository_owner }}/charts
           tag: 0.1.0
           path: charts/go-app # Default charts/{name}
           registry: ghcr.io
