@@ -42,3 +42,20 @@ jobs:
         - registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+    
+  chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Chart | Push
+        uses: appany/helm-oci-chart-releaser@v0.5.0
+        with:
+          name: go-app
+          repository: ${{ github.repository }}/charts
+          tag: 0.1.0
+          path: charts/go-app # Default charts/{name}
+          registry: ghcr.io
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
