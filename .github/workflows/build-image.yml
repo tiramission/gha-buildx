@@ -33,6 +33,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Set up Docker Buildx
+        if: ${{ false }} # Disable Buildx setup for testing purposes
         uses: docker/setup-buildx-action@v4
       
       - name: Test Qemu Status
