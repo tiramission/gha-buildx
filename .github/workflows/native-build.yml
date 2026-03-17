@@ -26,6 +26,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/go-app
+          tags: |
+            type=ref,event=branch
+            type=sha
+
       - name: Build and push
         uses: depot/build-push-action@v1
         with:
@@ -33,7 +43,8 @@ jobs:
           project: sh43mm1j29 # default
           context: ./go-app
           push: true
-          tags: ghcr.io/${{ github.repository }}/go-app:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           platforms: |
             linux/amd64
             linux/arm64
