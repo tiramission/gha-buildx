@@ -35,6 +35,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       
+      - name: Test Qemu Status
+        run: |
+          ls -alh /proc/sys/fs/binfmt_misc
+          docker run --privileged --rm tonistiigi/binfmt
+
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
