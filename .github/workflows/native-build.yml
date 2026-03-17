@@ -1,0 +1,31 @@
+name: Build and Push Docker Image (Native)
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+  pull_request:
+
+  build:
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read # to fetch the repository content
+      # id-token: write # for signing attestation(s) with GitHub OIDC Token
+      packages: write # to push the built image to GitHub Container Registry
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64
+      meta-images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      set-meta-annotations: true
+    secrets:
+      registry-auths: |
+        - registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
