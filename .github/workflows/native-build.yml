@@ -33,3 +33,4 @@ jobs:
           context: ./go-app
           push: true
           tags: ghcr.io/${{ github.repository }}/go-app:latest
+          plartform: linux/amd64,linux/arm64
