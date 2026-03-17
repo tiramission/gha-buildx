@@ -22,6 +22,9 @@ jobs:
       meta-images: ghcr.io/${{ github.repository }}
       set-meta-annotations: true
       sign: false
+      meta-tags: |
+        type=raw,value=sha-{{sha}}
+        type=raw,value=latest,enable={{is_default_branch}}
     secrets:
       registry-auths: |
         - registry: ghcr.io
