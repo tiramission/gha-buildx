@@ -29,6 +29,7 @@ jobs:
         uses: depot/build-push-action@v1
         with:
           # if no depot.json file is at the root of your repo, you must specify the project id
+          project: sh43mm1j29 # default
           context: ./go-app
           push: true
           tags: ghcr.io/${{ github.repository }}/go-app:latest
