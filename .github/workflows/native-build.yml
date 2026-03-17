@@ -1,71 +1,34 @@
-name: "Build and Push Docker Image (Native)"
+name: Build image
 
 on:
   push:
     branches:
-      - 'main'
-    tags:
-      - 'v*'
-  pull_request:
+      - main
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        target:
-        - go-app
-        - go-app-2
-        include:
-        - target: go-app
-          workdir: ./go-app
-        - target: go-app-2
-          workdir: ./go-app-2
-
-    uses: docker/github-builder/.github/workflows/build.yml@v1
-    permissions:
-      contents: read # to fetch the repository content
-      # id-token: write # for signing attestation(s) with GitHub OIDC Token
-      packages: write # to push the built image to GitHub Container Registry
-    with:
-      output: image
-      push: true
-      platforms: linux/amd64,linux/arm64
-      meta-images: ghcr.io/${{ github.repository }}/${{ matrix.target }}
-      context: ${{ matrix.workdir }}
-      set-meta-annotations: true
-      sign: false
-      meta-tags: |
-        type=raw,value=sha-{{sha}}
-        type=raw,value=git.${{ github.sha }}
-        type=raw,value=latest,enable={{is_default_branch}}
-    secrets:
-      registry-auths: |
-        - registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-    
-  chart:
-    depends-on: build
+  docker-image:
     runs-on: ubuntu-latest
     permissions:
-      packages: write # to push the built image to GitHub Container Registry
+      contents: read
+      id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      
-      - name: Modify values.yaml
-        run: |
-          yq -i '.image.tag="git.${{ github.sha }}"' charts/go-app/values.yaml
-          yq -i '.image.registry="ghcr.io"' charts/go-app/values.yaml
-          yq -i '.image.repository="${{ github.repository }}/go-app"' charts/go-app/values.yaml
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Chart | Push
-        uses: appany/helm-oci-chart-releaser@v0.5.0
+      - name: Set up Depot CLI
+        uses: depot/setup-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
         with:
-          name: go-app
-          repository: ${{ github.repository_owner }}/charts
-          tag: 0.1.0
-          path: charts/go-app # Default charts/{name}
           registry: ghcr.io
-          registry_username: ${{ github.actor }}
-          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: depot/build-push-action@v1
+        with:
+          # if no depot.json file is at the root of your repo, you must specify the project id
+          context: ./go-app
+          push: true
+          tags: ghcr.io/${{ github.repository }}/go-app:latest
