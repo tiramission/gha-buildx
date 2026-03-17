@@ -10,6 +10,17 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        target:
+        - go-app
+        - go-app-2
+        include:
+        - target: go-app
+          workdir: ./go-app
+        - target: go-app-2
+          workdir: ./go-app-2
+
     uses: docker/github-builder/.github/workflows/build.yml@v1
     permissions:
       contents: read # to fetch the repository content
@@ -19,7 +30,8 @@ jobs:
       output: image
       push: true
       platforms: linux/amd64,linux/arm64
-      meta-images: ghcr.io/${{ github.repository }}
+      meta-images: ghcr.io/${{ github.repository }}/${{ matrix.target }}
+      context: ${{ matrix.workdir }}
       set-meta-annotations: true
       sign: false
       meta-tags: |
